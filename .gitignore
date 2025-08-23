@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+benchmark_venv/
+test_env_311/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data files
+*.pkl
+*.h5
+*.hdf5
+*.csv
+*.npy
+*.npz
+
+# Model files
+models/
+*.gguf
+
+# Benchmark results
+benchmark_results/
+benchmark_*.json
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Local development
+.env
+.env.local
+
+# System Files
+.DS_Store
+Thumbs.db
+models/

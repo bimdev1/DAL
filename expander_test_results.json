@@ -1,0 +1,101 @@
+[
+  {
+    "test_case": "short_question",
+    "input_text": "What is quantum mechanics?",
+    "output_text": "What is quantum mechanics?",
+    "input_tokens": 5,
+    "output_tokens": 5,
+    "ratio": 1.0,
+    "duration": 9.946545839309692,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "very_short",
+    "input_text": "Explain briefly.",
+    "output_text": "Explain briefly.",
+    "input_tokens": 4,
+    "output_tokens": 4,
+    "ratio": 1.0,
+    "duration": 0.00040078163146972656,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "short_sentence",
+    "input_text": "The cat sat on the mat.",
+    "output_text": "The cat sat on the mat.",
+    "input_tokens": 7,
+    "output_tokens": 7,
+    "ratio": 1.0,
+    "duration": 0.00029778480529785156,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "short_request",
+    "input_text": "Please summarize the key points.",
+    "output_text": "Please summarize the key points.",
+    "input_tokens": 6,
+    "output_tokens": 6,
+    "ratio": 1.0,
+    "duration": 0.0002560615539550781,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "medium_question",
+    "input_text": "What are the main differences between classical and quantum mechanics?",
+    "output_text": "What are the main differences between classical and quantum mechanics?",
+    "input_tokens": 11,
+    "output_tokens": 11,
+    "ratio": 1.0,
+    "duration": 0.0005049705505371094,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "medium_explanation",
+    "input_text": "Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles.",
+    "output_text": "Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles.",
+    "input_tokens": 29,
+    "output_tokens": 29,
+    "ratio": 1.0,
+    "duration": 0.0008473396301269531,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "long_explanation",
+    "input_text": "Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles. It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science. Classical physics, the description of physics that existed before theories of relativity and quantum mechanics, describes many aspects of nature at an ordinary (macroscopic) scale, while quantum mechanics explains the aspects of nature at small (atomic and subatomic) scales, for which classical mechanics is insufficient.",
+    "output_text": "Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles . It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science . Classical physics describes many aspects of physics that existed before theories of relativity and quantum mechanics .",
+    "input_tokens": 110,
+    "output_tokens": 70,
+    "ratio": 0.6363636363636364,
+    "duration": 1.0684192180633545,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "empty_string",
+    "input_text": "",
+    "output_text": "",
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "ratio": 1.0,
+    "duration": 6.4849853515625e-05,
+    "passed": true,
+    "error": null
+  },
+  {
+    "test_case": "long_repetitive",
+    "input_text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+    "output_text": "Word is a word word word by word word . word word is the most powerful word word has ever been used in the world . Word is the highest word word of the word of \"word\" and \"wordword\" is the lowest word of all word word. word word was the most important word of word word for the word word, \"word for word\" .",
+    "input_tokens": 200,
+    "output_tokens": 74,
+    "ratio": 0.37,
+    "duration": 1.2413887977600098,
+    "passed": true,
+    "error": null
+  }
+]
