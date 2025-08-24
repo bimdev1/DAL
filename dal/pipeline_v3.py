@@ -26,6 +26,8 @@ from .pipeline_v2 import (
 
 # Import new components for local generation
 from .local_generator import LocalGenerator
+from .reflexive import check_consistency, optimize_order, reflexive_stitch
+from .sdt_injector import SDTOpts
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +45,10 @@ class PipelineConfig:
         force_regen: bool = False,
         local_model_spec: Optional[Dict[str, Any]] = None,
         max_new_tokens: int = 128,
-        local_generation_timeout: float = 8.0
+        local_generation_timeout: float = 8.0,
+        use_reflexive: bool = True,
+        reflexive_allow_mini_gen: bool = False,
+        sdt_opts: Optional[Dict[str, Any]] = None
     ):
         """Initialize pipeline configuration.
         
@@ -58,6 +63,9 @@ class PipelineConfig:
             local_model_spec: Configuration for the local model
             max_new_tokens: Maximum tokens to generate per segment
             local_generation_timeout: Timeout in seconds for local generation
+            use_reflexive: Whether to use the reflexive revision engine
+            reflexive_allow_mini_gen: Allow small generations for transitions
+            sdt_opts: Options for SDT prompt construction
         """
         self.n_segments = n_segments
         self.expand = expand
@@ -74,6 +82,16 @@ class PipelineConfig:
         }
         self.max_new_tokens = max_new_tokens
         self.local_generation_timeout = local_generation_timeout
+        self.use_reflexive = use_reflexive
+        self.reflexive_allow_mini_gen = reflexive_allow_mini_gen
+        self.sdt_opts = sdt_opts or {}
+        
+        # Initialize SDT options with defaults if not provided
+        self.sdt_opts = SDTOpts(**{**{
+            'prompt_style': 'llama_inst',
+            'include_constraints': True,
+            'extra_constraints': []
+        }, **self.sdt_opts})
 
 def run_enhanced_pipeline_v3(
     prompt: str,
@@ -99,7 +117,7 @@ def run_enhanced_pipeline_v3(
     
     # Check version compatibility
     from .dal_versions import check_compatibility, log_versions, get_version
-    compatible, message = check_compatibility('pipeline_v3.0')
+    compatible, message = check_compatibility('pipeline_v3')
     if not compatible:
         log_versions()
         raise RuntimeError(f"Version compatibility error: {message}")
@@ -187,7 +205,8 @@ def run_enhanced_pipeline_v3(
                     text=seg,
                     sdt=sdt,
                     max_new_tokens=config.max_new_tokens,
-                    timeout_s=config.local_generation_timeout
+                    timeout_s=config.local_generation_timeout,
+                    sdt_opts=config.sdt_opts
                 )
                 
                 # Update metrics
@@ -225,7 +244,59 @@ def run_enhanced_pipeline_v3(
     
     metrics["timing"]["generation"] = time.time() - gen_start
     
-    # Step 4: Stitch the final output
+    # Step 4: Apply reflexive revision if enabled
+    reflexive_metrics = {}
+    if config.use_reflexive and len(processed_segments) > 1:
+        try:
+            reflexive_start = time.time()
+            
+            # Check for consistency issues
+            issues = check_consistency(processed_segments)
+            reflexive_metrics['issues_found'] = len(issues)
+            reflexive_metrics['issues'] = [{
+                'block_index': i.block_index,
+                'issue_type': i.issue_type,
+                'severity': i.severity,
+                'description': i.description,
+                'related_blocks': i.related_blocks
+            } for i in issues]
+            
+            # Optimize block order
+            new_order = optimize_order(processed_segments, tags_list)
+            reflexive_metrics['reordered'] = new_order != list(range(len(processed_segments)))
+            reflexive_metrics['new_order'] = new_order
+            
+            # Apply reordering
+            if new_order != list(range(len(processed_segments))):
+                processed_segments = [processed_segments[i] for i in new_order]
+                tags_list = [tags_list[i] for i in new_order]
+                sdts = [sdts[i] for i in new_order]
+            
+            # Apply reflexive stitching
+            revised_blocks, stitch_metrics = reflexive_stitch(
+                processed_segments,
+                allow_mini_gen=config.reflexive_allow_mini_gen,
+                local_gen=local_generator if config.use_local_generation and config.reflexive_allow_mini_gen else None
+            )
+            
+            reflexive_metrics.update({
+                'blocks_modified': stitch_metrics.get('blocks_modified', []),
+                'transitions_added': stitch_metrics.get('transitions_added', 0),
+                'mini_generations': stitch_metrics.get('mini_generations', 0),
+                'duration': time.time() - reflexive_start
+            })
+            
+            processed_segments = revised_blocks
+            metrics['reflexive'] = reflexive_metrics
+            
+        except Exception as e:
+            logger.error(f"Reflexive revision failed: {e}", exc_info=True)
+            metrics['reflexive'] = {
+                'error': str(e),
+                'success': False
+            }
+    
+    # Step 5: Stitch the final output
     stitch_start = time.time()
     final_text = stitch_segments(processed_segments, tags=tags_list)
     metrics["timing"]["stitching"] = time.time() - stitch_start

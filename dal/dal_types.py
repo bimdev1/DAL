@@ -17,24 +17,49 @@ class DALTagBlock:
     version: str = "0.1.0"
     topic: str = "unknown"
     voice: str = "neutral"
+    tone: str = "neutral"
     depth: int = 3
     format: str = "exposition"
     priority: int = 0
     recursion_limit: int = 1
     source: str = "inherited"  # Tracks tag provenance for reflexive passes
+    style: str = "default"
+    attributes: Dict[str, Any] = field(default_factory=dict)
+    
+    def __post_init__(self):
+        # Backward compatibility for direct attribute access
+        if hasattr(self, 'tone') and self.tone and 'tone' not in self.attributes:
+            self.attributes['tone'] = self.tone
+        if hasattr(self, 'depth') and 'depth' not in self.attributes:
+            self.attributes['depth'] = self.depth
+        if hasattr(self, 'format') and 'format' not in self.attributes:
+            self.attributes['format'] = self.format
+        if hasattr(self, 'style') and self.style and 'style' not in self.attributes:
+            self.attributes['style'] = self.style
+    
+    def __getattr__(self, name):
+        # Allow attribute access via dot notation for backward compatibility
+        if name in self.attributes:
+            return self.attributes[name]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert the DALTagBlock to a dictionary."""
-        return {
+        result = {
             "version": self.version,
             "topic": self.topic,
             "voice": self.voice,
+            "tone": self.tone,
             "depth": self.depth,
             "format": self.format,
             "priority": self.priority,
             "recursion_limit": self.recursion_limit,
-            "source": self.source
+            "source": self.source,
+            "style": self.style
         }
+        # Include any additional attributes
+        result.update(self.attributes)
+        return result
 
 
 @dataclass

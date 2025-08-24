@@ -54,6 +54,16 @@ class TestLocalGenerator(unittest.TestCase):
     
     def test_generate_success(self):
         """Test successful text generation."""
+        # Create a mock GenerationResult object with the required attributes
+        from unittest.mock import MagicMock
+        mock_result = MagicMock()
+        mock_result.text = 'Generated text'
+        mock_result.tokens_prompt = 10
+        mock_result.tokens_generated = 20
+        
+        # Set up the mock to return our mock result
+        self.mock_model.generate.return_value = mock_result
+        
         generator = LocalGenerator(self.model_spec)
         sdt = DALTagBlock(voice='professional')
         

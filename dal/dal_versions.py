@@ -14,10 +14,11 @@ logger = logging.getLogger(__name__)
 
 # Version information for the DAL system
 # Format: (MAJOR, MINOR, PATCH, STATUS)
-VERSION = (1, 2, 0, 'beta')
+VERSION = (1, 3, 0, 'beta')
 
 # Version history with changes
 VERSION_HISTORY = {
+    '1.3.0': 'Added Reflexive Revision Engine and enhanced SDT injection',
     '1.2.0': 'Added local SDT-aware generation with model_loader and pipeline_v3',
     '1.1.0': 'Added version management system and improved pipeline metrics',
     '1.0.0': 'Initial release with ExpanderV2 improvements and version tracking',
@@ -25,14 +26,15 @@ VERSION_HISTORY = {
 
 # Component versions
 COMPONENT_VERSIONS = {
-    'core': '1.2.0',
+    'core': '1.3.0',
     'expander': '1.1.0',  # ExpanderV2
-    'pipeline': '1.2.0',  # pipeline_v3
+    'pipeline': '1.3.0',  # pipeline_v3 with reflexive
     'pipeline_v2': '1.1.0',
-    'pipeline_v3': '1.0.0',
+    'pipeline_v3': '1.1.0',  # Updated for reflexive support
     'model_loader': '1.0.0',
-    'local_generator': '1.0.0',
-    'sdt_injector': '1.0.0',
+    'local_generator': '1.1.0',  # Updated for SDT opts
+    'sdt_injector': '1.1.0',    # Updated with normalization
+    'reflexive': '1.0.0',       # New component
     'vectorizer': '1.0.0',
     'tagging': '1.0.0',
 }
@@ -41,13 +43,14 @@ COMPONENT_VERSIONS = {
 # Defines minimum required versions for compatibility
 COMPATIBILITY = {
     'pipeline_v1': {'min_core': '0.9.0', 'max_core': '1.0.0'},
-    'pipeline_v2': {'min_core': '1.0.0', 'max_core': '1.2.0'},
-    'pipeline_v2.1': {'min_core': '1.1.0', 'max_core': '1.2.0'},
+    'pipeline_v2': {'min_core': '1.0.0', 'max_core': '1.3.0'},
+    'pipeline_v2.1': {'min_core': '1.1.0', 'max_core': '1.3.0'},
     'pipeline_v3': {'min_core': '1.2.0', 'max_core': '2.0.0'},
     'expander_v1': {'min_core': '0.9.0', 'max_core': '1.0.0'},
     'expander_v2': {'min_core': '1.0.0', 'max_core': '2.0.0'},
     'model_loader': {'min_core': '1.2.0', 'max_core': '2.0.0'},
     'local_generator': {'min_core': '1.2.0', 'max_core': '2.0.0'},
+    'reflexive': {'min_core': '1.3.0', 'max_core': '2.0.0'},
     'sdt_injector': {'min_core': '1.2.0', 'max_core': '2.0.0'},
 }
 

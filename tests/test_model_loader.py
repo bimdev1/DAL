@@ -7,7 +7,6 @@ from dal.model_loader import (
     ModelBackend,
     ModelLoadError,
     load_local_model,
-    test_local_model,
 )
 
 class TestModelLoader(unittest.TestCase):
@@ -58,41 +57,99 @@ class TestModelLoader(unittest.TestCase):
 
     @patch('transformers.AutoModelForCausalLM.from_pretrained')
     @patch('transformers.AutoTokenizer.from_pretrained')
-    def test_test_local_model_success(self, mock_tokenizer, mock_model):
-        """Test the test_local_model function with a successful run."""
-        # Mock the model and tokenizer
-        mock_tokenizer.return_value = MagicMock()
-        mock_model.return_value = MagicMock()
+    def test_model_generation(self, mock_tokenizer, mock_model):
+        """Test model generation with a mock model."""
+        from dataclasses import dataclass
+        from unittest.mock import MagicMock, ANY
+        import torch
         
-        # Mock model generation
-        mock_model.return_value.generate.return_value = torch.tensor([[1, 2, 3]])
-        mock_tokenizer.return_value.decode.return_value = "Test output"
+        # Create a mock GenerationResult
+        @dataclass
+        class MockGenerationResult:
+            text: str
+            tokens_prompt: int
+            tokens_generated: int
+            time_seconds: float
         
-        # Run the test
-        result = test_local_model({
-            "backend": "huggingface",
-            "model_name_or_path": "microsoft/phi-2"
-        })
+        # Create a mock model that will be returned by from_pretrained
+        class MockModel:
+            def __init__(self):
+                self.model_info = {
+                    'backend': 'huggingface',
+                    'model_name': 'microsoft/phi-2',
+                    'quantization': '4bit'
+                }
+                self.config = MagicMock()
+                self.config.pad_token_id = 0
+                self.config.eos_token_id = 1
+                self.config.bos_token_id = 2
+                
+                # Create a mock for the generate method
+                self.generate = MagicMock()
+                
+                # Create a mock tensor output for the model
+                mock_output = torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]])
+                self.generate.return_value = mock_output
         
-        self.assertTrue(result["success"])
-        self.assertIn("generation_result", result)
-        self.assertEqual(result["generation_result"]["output_text"], "Test output")
-
+        # Create the mock model instance
+        mock_model_instance = MockModel()
+        mock_model.return_value = mock_model_instance
+        
+        # Create a mock tokenizer
+        mock_tokenizer_instance = MagicMock()
+        mock_tokenizer_instance.pad_token_id = 0
+        mock_tokenizer_instance.eos_token_id = 1
+        mock_tokenizer_instance.bos_token_id = 2
+        
+        # Create a mock tensor with a to() method
+        mock_tensor = MagicMock()
+        mock_tensor.shape = [1, 3]  # Mock shape for input_ids
+        mock_tensor.__getitem__.return_value = torch.tensor([1, 2, 3])  # For input_ids[1:]
+        
+        # Mock the return value of the tokenizer
+        mock_encoded = MagicMock()
+        mock_encoded.input_ids = mock_tensor
+        mock_encoded.to.return_value = mock_encoded  # Make to() return self
+        
+        # Mock the tokenizer's return values
+        mock_tokenizer_instance.return_value = mock_encoded
+        mock_tokenizer_instance.decode.return_value = "Test output"
+        mock_tokenizer.return_value = mock_tokenizer_instance
+        
+        # Mock the device
+        with patch('torch.cuda.is_available', return_value=False):
+            # Load the model
+            model = load_local_model({
+                "backend": "huggingface",
+                "model_name_or_path": "microsoft/phi-2"
+            })
+            
+            # Test generation with minimal parameters
+            result = model.generate("Test prompt", max_new_tokens=10)
+            
+            # Verify the result
+            self.assertEqual(result.text, "Test output")
+            self.assertEqual(result.tokens_prompt, 3)  # Based on the mock input_ids
+            self.assertEqual(result.tokens_generated, 12)  # 15 (output length) - 3 (input length)
+        
     @patch('transformers.AutoModelForCausalLM.from_pretrained')
-    def test_test_local_model_failure(self, mock_model):
-        """Test the test_local_model function with a failed run."""
-        # Make model loading fail
-        mock_model.side_effect = RuntimeError("Failed to load model")
+    def test_model_loading_failure(self, mock_model):
+        """Test model loading failure with an invalid model."""
+        from dal.model_loader import ModelLoadError
         
-        # Run the test
-        result = test_local_model({
-            "backend": "huggingface",
-            "model_name_or_path": "invalid/model"
-        })
+        # Make model loading fail with a specific error message
+        error_msg = "invalid/model is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'"
+        mock_model.side_effect = RuntimeError(error_msg)
         
-        self.assertFalse(result["success"])
-        self.assertIn("error", result)
-        self.assertIn("Failed to load model", result["error"])
+        # Test that loading an invalid model raises a ModelLoadError
+        with self.assertRaises(ModelLoadError) as context:
+            load_local_model({
+                "backend": "huggingface",
+                "model_name_or_path": "invalid/model"
+            })
+        
+        # Verify the error message is wrapped in ModelLoadError
+        self.assertIn(error_msg, str(context.exception))
 
 
 if __name__ == "__main__":

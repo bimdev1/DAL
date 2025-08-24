@@ -49,7 +49,8 @@ class LocalGenerator:
         max_new_tokens: int = 128,
         temperature: float = 0.7,
         stop: Optional[List[str]] = None,
-        timeout_s: float = 8.0
+        timeout_s: float = 8.0,
+        sdt_opts: Optional[Any] = None
     ) -> Dict[str, Any]:
         """Generate text based on input text and SDT.
         
@@ -60,6 +61,7 @@ class LocalGenerator:
             temperature: Sampling temperature (0.0-1.0)
             stop: List of stop sequences
             timeout_s: Maximum time to wait for generation in seconds
+            sdt_opts: Optional SDT options for prompt construction
             
         Returns:
             Dictionary containing:
@@ -70,14 +72,14 @@ class LocalGenerator:
             - backend: Backend used (hf/gguf)
             - model: Model name/identifier
             - prompt_preview: Truncated prompt for logging
-            - sdt_applied: Normalized SDT attributes used
+            - sdt_applied: Normalized SDT attributes used (dict)
         """
         if not self.is_ready():
             logger.warning("Local model not loaded, falling back to passthrough")
             return self._passthrough_result(text)
         
         # Build the prompt using SDT
-        prompt, sdt_applied = build_prompt(text, sdt)
+        prompt, sdt_applied = build_prompt(text, sdt, sdt_opts)
         prompt_preview = (prompt[:200] + "...") if len(prompt) > 200 else prompt
         
         # Prepare generation parameters
@@ -101,6 +103,9 @@ class LocalGenerator:
             
             duration = time.time() - start_time
             
+            # Convert SDTApplied to dict for serialization
+            sdt_applied_dict = sdt_applied.to_dict() if sdt_applied else None
+            
             return {
                 "text": result.text,  # Access attributes directly from the GenerationResult object
                 "tokens_in": result.tokens_prompt,
@@ -109,7 +114,7 @@ class LocalGenerator:
                 "backend": self.model_spec.get("backend", "unknown"),
                 "model": self.model_spec.get("model_name_or_path", "unknown"),
                 "prompt_preview": prompt_preview,
-                "sdt_applied": sdt_applied.to_dict() if sdt_applied else None
+                "sdt_applied": sdt_applied_dict
             }
             
         except Exception as e:

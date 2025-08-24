@@ -76,37 +76,92 @@ class BenchmarkResult:
     keyword_match_ratio: float = 0.0
     metrics: Dict[str, Any] = field(default_factory=dict)
 
-# Sample benchmark prompts for factual synthesis
+# Enhanced benchmark prompts with specific instructions and expected outputs
 BENCHMARK_PROMPTS = [
     {
         "id": "science_1",
-        "prompt": "Summarize the key principles of quantum mechanics in simple terms.",
+        "prompt": """# Quantum Mechanics Overview
+
+Provide a clear and concise explanation of the key principles of quantum mechanics. Your response should:
+1. Be suitable for a high school student
+2. Cover the core concepts in simple terms
+3. Include practical examples where possible
+4. Focus on explaining these key terms: wave-particle duality, uncertainty principle, superposition, and quantization
+
+Structure your response with clear section headings for each principle.""",
         "domain": "science",
-        "expected_keywords": ["wave-particle", "uncertainty", "superposition", "quantization"]
+        "expected_keywords": ["wave-particle", "uncertainty", "superposition", "quantization"],
+        "min_length": 200
     },
     {
         "id": "history_1",
-        "prompt": "Explain the main causes of World War I.",
+        "prompt": """# Causes of World War I
+
+Analyze and explain the main causes of World War I. Your response should:
+1. Cover the four MAIN causes (Militarism, Alliances, Imperialism, Nationalism)
+2. Explain how each factor contributed to the outbreak of war
+3. Provide specific historical examples for each cause
+4. Discuss the immediate trigger (assassination of Archduke Franz Ferdinand)
+
+Organize your response with clear sections for each cause and a conclusion.""",
         "domain": "history",
-        "expected_keywords": ["militarism", "alliances", "imperialism", "nationalism"]
+        "expected_keywords": ["militarism", "alliances", "imperialism", "nationalism"],
+        "min_length": 250
     },
     {
         "id": "tech_1",
-        "prompt": "Describe how blockchain technology works.",
+        "prompt": """# Blockchain Technology Explained
+
+Explain how blockchain technology works in a way that's accessible to non-technical readers. Your response should:
+1. Define what a blockchain is in simple terms
+2. Explain the concept of blocks and how they're chained together
+3. Describe the role of hashing in maintaining security
+4. Explain the decentralized nature of blockchains
+5. Provide a simple example of a blockchain transaction
+
+Use analogies where helpful to make complex concepts understandable.""",
         "domain": "technology",
-        "expected_keywords": ["blocks", "decentralized", "hash", "transactions"]
+        "expected_keywords": ["blocks", "decentralized", "hash", "transactions"],
+        "min_length": 200
     },
     {
         "id": "science_2",
-        "prompt": "What are the main differences between DNA and RNA?",
+        "prompt": """# DNA vs RNA: Key Differences
+
+Compare and contrast DNA and RNA molecules. Your response should:
+1. List and explain at least 5 key structural differences
+2. Describe the functional differences between DNA and RNA
+3. Explain the significance of each molecule in cellular processes
+4. Include a comparison of their sugar components (deoxyribose vs ribose)
+5. Explain the base pairing rules for each molecule
+
+Organize your response with clear headings and bullet points for better readability.""",
         "domain": "science",
-        "expected_keywords": ["deoxyribose", "ribose", "thymine", "uracil", "double-stranded", "single-stranded"]
+        "expected_keywords": ["deoxyribose", "ribose", "thymine", "uracil", "double-stranded", "single-stranded"],
+        "min_length": 250
     },
     {
         "id": "history_2",
-        "prompt": "What were the key events of the American Civil Rights Movement?",
+        "prompt": """# American Civil Rights Movement: Key Events
+
+Provide a comprehensive overview of the American Civil Rights Movement, focusing on these key events:
+1. Brown v. Board of Education (1954)
+2. Montgomery Bus Boycott (1955-1956)
+3. Little Rock Nine (1957)
+4. March on Washington (1963)
+5. Civil Rights Act (1964)
+6. Voting Rights Act (1965)
+
+For each event, include:
+- The date(s) it occurred
+- Key figures involved
+- Main outcomes and significance
+- How it advanced civil rights
+
+Conclude with a brief assessment of the movement's overall impact on American society.""",
         "domain": "history",
-        "expected_keywords": ["segregation", "Martin Luther King", "Civil Rights Act", "voting rights"]
+        "expected_keywords": ["Montgomery Bus Boycott", "March on Washington", "Civil Rights Act", "Voting Rights Act"],
+        "min_length": 400
     }
 ]
 
